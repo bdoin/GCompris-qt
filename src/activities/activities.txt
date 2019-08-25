@@ -73,6 +73,7 @@ hanoi_real
 hexagon
 imagename
 instruments
+inter-note
 intro_gravity
 land_safe
 lang
@@ -122,8 +123,8 @@ number_sequence
 numbers-odd-even
 paintings
 penalty
-piano_composition
 photo_hunter
+piano_composition
 planegame
 play_piano
 play_rhythm
