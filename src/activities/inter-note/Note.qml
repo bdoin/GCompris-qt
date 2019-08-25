@@ -25,7 +25,6 @@ import "inter-note.js" as Activity
 Item {
     id: draggedItem
     property string colorNote
-    property real note
     Component.onCompleted: console.log("Note created=", note, colorNote)
     Rectangle {
         id: img

@@ -76,22 +76,22 @@ ActivityBase {
         }
 
         // Intro message
-//        IntroMessage {
-//            id: introMessage
-//            y: background.height / 4.7
-//            anchors {
-//                right: parent.right
-//                rightMargin: 5
-//                left: parent.left
-//                leftMargin: 5
-//            }
-//            z: score.z + 1
-//            onIntroDone: {
-//            }
-//            intro: [
-//                qsTr("TBD."),
-//            ]
-//        }
+        IntroMessage {
+            id: introMessage
+            y: background.height / 4.7
+            anchors {
+                right: parent.right
+                rightMargin: 5
+                left: parent.left
+                leftMargin: 5
+            }
+            z: score.z + 1
+            onIntroDone: {
+            }
+            intro: [
+                qsTr("TBD."),
+            ]
+        }
 
         // Answer Zone
         Rectangle {
@@ -138,12 +138,12 @@ ActivityBase {
                         }
                     }
 
-                    function createNewItem() {
+                    function createNewItem(color) {
+                        console.log("createNewItem");
                         var component = Qt.createComponent("Note.qml");
                         if(component.status === Component.Ready) {
                             var newItem = component.createObject(parent, {"x": x, "y": y, "z": 10,
-                                                                     "colorNote": "red",
-                                                                     "note": 64});
+                                                                     "colorNote": color} );
                         }
                         return newItem
                     }
@@ -155,10 +155,10 @@ ActivityBase {
                         anchors.fill: parent
 
                         onPressed: {
-                            console.log("onclick", index, note.note)
+                            console.log("onPressed", index, note.note)
                             GSynth.generate(note.note, 400)
                             if(items.memoryMode) {
-                                drag.target = parent.createNewItem();
+                                drag.target = parent.createNewItem(note.color);
                                 parent.opacity = 0
                                 listModel.move(index, listModel.count - 1, 1)
                             }
@@ -174,6 +174,8 @@ ActivityBase {
                         }
 
                         onClicked: {
+                            console.log("onClicked", index, note.note)
+                            GSynth.generate(note.note, 400)
                             // skips memorization time
                             if(!items.memoryMode) {
                                 bar.hintClicked()
@@ -246,19 +248,24 @@ ActivityBase {
                     if(event.key === Qt.Key_Space) {
                         if(selectedSwapIndex === -1 && listModel.count > 1) {
                             answerZone.selectedSwapIndex = answerZone.currentIndex;
+                            GSynth.generate(items.modelData[answerZone.selectedSwapIndex].note, 400)
                             swapHighlight.x = answerZone.currentItem.x;
                             swapHighlight.anchors.top = answerZone.top;
+                            console.log("selection done", answerZone.selectedSwapIndex);
                         }
-                        else if(answerZone.currentIndex != selectedSwapIndex && listModel.count > 1){
+                        else if(answerZone.currentIndex != selectedSwapIndex && listModel.count > 1) {
+                            var tmp = items.modelData[selectedSwapIndex];
+                            items.modelData[selectedSwapIndex] = items.modelData[answerZone.currentIndex];
+                            items.modelData[answerZone.currentIndex] = tmp;
                             var min = Math.min(selectedSwapIndex, answerZone.currentIndex);
                             var max = Math.max(selectedSwapIndex, answerZone.currentIndex);
-                            listModel.move(min, max, 1);
-                            listModel.move(max-1, min, 1);
+                            items.listModel.move(min, max, 1);
+                            items.listModel.move(max-1, min, 1);
                             answerZone.selectedSwapIndex = -1;
                         }
                     }
                 }
-                // variable for storing the index of wagons to be swapped via key navigations.
+                // variable for storing the index of notes to be swapped via key navigations.
                 property int selectedSwapIndex: -1
 
                 Keys.enabled: true
