@@ -57,7 +57,7 @@ Generator::stop() {
 }
 
 void
-Generator::addWave(unsigned char note, unsigned char vel) {
+Generator::addWave(qreal note, unsigned char vel) {
     Wave wav;
     wav.state = wav.STATE_ATTACK;
     wav.note  = note;
@@ -100,7 +100,7 @@ Generator::bytesAvailable() const {
 }
 
 void
-Generator::noteOn(unsigned char chan, unsigned char note, unsigned char vel) {
+Generator::noteOn(unsigned char chan, qreal note, unsigned char vel) {
     // Velocity of 255 is assumed since a "pleasant" relationship between the
     // velocity in the MIDI event and the parameters of the corresponding Wave
     // cannot be currently selected by the user.
@@ -111,12 +111,13 @@ Generator::noteOn(unsigned char chan, unsigned char note, unsigned char vel) {
 }
 
 void
-Generator::noteOff(unsigned char chan, unsigned char note) {
+Generator::noteOff(unsigned char chan, qreal note) {
     QMutableListIterator<Wave> i(waveList);
 
     while (i.hasNext()) {
         Wave wav = i.next();
-        if (wav.note == note && wav.state != Wave::STATE_RELEASE) {
+        if (static_cast<int>(wav.note * 100) == static_cast<int>(note * 100) &&
+                wav.state != Wave::STATE_RELEASE) {
             // To avoid discontinuity in the envelope, the initial value for
             // the release part of the envelope should be equal to current
             // value.

@@ -39,7 +39,8 @@
 class Wave {
 public:
     enum {STATE_OFF, STATE_ATTACK, STATE_DECAY, STATE_RELEASE};
-    unsigned char note, vel, state;
+    qreal note;
+    unsigned char vel, state;
     qreal state_age, age;
     ADSREnvelope env;
 };
@@ -59,7 +60,7 @@ public:
     void stop     ();
     void setState ();
 
-    void addWave (unsigned char note, unsigned char vel);
+    void addWave (qreal note, unsigned char vel);
 
     qint64 readData(char *data, qint64 len);
     qint64 writeData(const char *data, qint64 len);
@@ -68,8 +69,8 @@ public:
     void generateData(qint64 len);
 
 public slots:
-    void noteOn   (unsigned char chan, unsigned char note, unsigned char vel);
-    void noteOff  (unsigned char chan, unsigned char note);
+    void noteOn   (unsigned char chan, qreal note, unsigned char vel);
+    void noteOff  (unsigned char chan, qreal note);
 
     // Slots for manipulation of the current patch.
     void setMode      (unsigned int _mode);

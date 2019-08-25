@@ -45,7 +45,7 @@ public:
      * @param note note to play
      * @param duration how much time the note needs to be played
      */
-    Q_INVOKABLE void generate(int note, int duration);
+    Q_INVOKABLE void generate(qreal note, int duration);
 
     static GSynth *getInstance() {
         if(!m_instance) {
@@ -60,8 +60,8 @@ protected:
     static GSynth *m_instance;
 
 private slots:
-    void stopAudio(int note);
-    
+    void stopAudio(qreal note);
+
 private:
     unsigned int bufferSize;
 

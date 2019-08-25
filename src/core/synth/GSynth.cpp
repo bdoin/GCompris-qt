@@ -69,20 +69,23 @@ GSynth::~GSynth() {
     }
 }
 
-void GSynth::generate(int note, int duration) {
+void GSynth::generate(qreal note, int duration) {
     //test part...
+    // Not being a real to give the possibilities to create note intervals.
+    // We need to keep the m_timers with notes as int, 100 should be enough
+    int note_int = static_cast<int>(note * 100);
     m_generator->noteOn(1, note, 255);
-    if(!m_timers.contains(note)) {
-        m_timers[note] = new QTimer();
-        connect(m_timers[note], &QTimer::timeout, this,
+    if(!m_timers.contains(note_int)) {
+        m_timers[note_int] = new QTimer();
+        connect(m_timers[note_int], &QTimer::timeout, this,
                 [this, note]() {
                     stopAudio(note);
                 });
     }
-    m_timers[note]->start(duration);
+    m_timers[note_int]->start(duration);
 }
 
-void GSynth::stopAudio(int note) {
+void GSynth::stopAudio(qreal note) {
     m_generator->noteOff(1, note);
 }
 
