@@ -73,11 +73,6 @@ function initLevel() {
     items.answerZone.currentIndex = 0;
     items.answerZone.selectedSwapIndex = -1;
 
-    // Initiates a new level
-    //Adds wagons to display in answerZone
-    var identifier;
-    var idNote;
-    items.modelData = []
     // Shuffle the colorset to make the game really random
     Core.shuffle(colorset);
 
@@ -89,12 +84,12 @@ function initLevel() {
     Core.shuffle(notes);
 
     for(var i=0; i<dataset["NotesToFind"][currentLevel]; i++) {
-        idNote = "note" + i;
-        console.log("addNote=", i, idNote)
-        items.modelData[i] = {
-            "color": colorset[i],
-            "note": notes[i] }
-        items.listModel.insert(i, items.modelData[i]);
+        console.log("addNote=", i, notes[i])
+        items.listModel.insert(i,
+                               {
+                                   "noteColor": colorset[i],
+                                   "noteVal": notes[i]
+                               });
     }
 
     items.bar.level = currentLevel + 1;

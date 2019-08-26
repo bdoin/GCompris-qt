@@ -54,7 +54,6 @@ ActivityBase {
             property alias bonus: bonus
             property alias score: score
             property alias listModel: listModel
-            property var modelData
             property alias answerZone: answerZone
             property alias animateFlow: animateFlow
             property alias introMessage: introMessage
@@ -62,8 +61,6 @@ ActivityBase {
             property bool mouseEnabled: true
             property var currentKeyZone: answerZone
             property bool keyNavigationMode: false
-            // stores height of sampleGrid images to set rail bar support position
-            property int sampleImageHeight: 0
         }
 
         onStart: { Activity.start(items) }
@@ -72,7 +69,6 @@ ActivityBase {
         Keys.onPressed: {
             items.keyNavigationMode = true;
             items.answerZone.handleKeys(event);
-            activity.audioEffects.play('qrc:/gcompris/src/core/resource/sounds/smudge.wav');
         }
 
         // Intro message
@@ -116,10 +112,10 @@ ActivityBase {
                     id: note
                     height: answerZone.cellHeight * 0.9
                     width: answerZone.cellWidth * 0.9
-                    color: items.modelData[index].color
-                    property var note: items.modelData[index].note
+                    color: noteColor
+                    property int noteValue: noteVal
                     function checkDrop(dragItem) {
-                        // Checks the drop location of this wagon
+                        // Checks the drop location of this note
                         var globalCoordinates = dragItem.mapToItem(answerZone, 0, 0)
                         if(globalCoordinates.y <= ((background.height / 12.5) + (background.height / 8))) {
                             var dropIndex = Activity.getDropIndex(globalCoordinates.x)
@@ -149,16 +145,14 @@ ActivityBase {
                     }
 
                     MouseArea {
-                        id: displayWagonMouseArea
+                        id: displayNoteMouseArea
                         hoverEnabled: true
                         enabled: !introMessage.visible && items.mouseEnabled
                         anchors.fill: parent
 
                         onPressed: {
-                            console.log("onPressed", index, note.note)
-                            GSynth.generate(note.note, 400)
                             if(items.memoryMode) {
-                                drag.target = parent.createNewItem(note.color);
+                                drag.target = parent.createNewItem(note.noteColor);
                                 parent.opacity = 0
                                 listModel.move(index, listModel.count - 1, 1)
                             }
@@ -174,8 +168,8 @@ ActivityBase {
                         }
 
                         onClicked: {
-                            console.log("onClicked", index, note.note)
-                            GSynth.generate(note.note, 400)
+                            console.log("onClicked", index, note.noteValue)
+                            GSynth.generate(note.noteValue, 400)
                             // skips memorization time
                             if(!items.memoryMode) {
                                 bar.hintClicked()
@@ -191,7 +185,7 @@ ActivityBase {
                     }
                     states: State {
                         name: "noteHover"
-                        when: displayWagonMouseArea.containsMouse && (items.memoryMode === true)
+                        when: displayNoteMouseArea.containsMouse && (items.memoryMode === true)
                         PropertyChanges {
                             target: wagon
                             scale: 1.1
@@ -248,15 +242,11 @@ ActivityBase {
                     if(event.key === Qt.Key_Space) {
                         if(selectedSwapIndex === -1 && listModel.count > 1) {
                             answerZone.selectedSwapIndex = answerZone.currentIndex;
-                            GSynth.generate(items.modelData[answerZone.selectedSwapIndex].note, 400)
                             swapHighlight.x = answerZone.currentItem.x;
                             swapHighlight.anchors.top = answerZone.top;
                             console.log("selection done", answerZone.selectedSwapIndex);
                         }
                         else if(answerZone.currentIndex != selectedSwapIndex && listModel.count > 1) {
-                            var tmp = items.modelData[selectedSwapIndex];
-                            items.modelData[selectedSwapIndex] = items.modelData[answerZone.currentIndex];
-                            items.modelData[answerZone.currentIndex] = tmp;
                             var min = Math.min(selectedSwapIndex, answerZone.currentIndex);
                             var max = Math.max(selectedSwapIndex, answerZone.currentIndex);
                             items.listModel.move(min, max, 1);
