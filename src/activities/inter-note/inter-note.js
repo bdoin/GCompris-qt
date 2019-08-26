@@ -66,8 +66,6 @@ function stop() {
 }
 
 function initLevel() {
-    items.mouseEnabled = true;
-    items.memoryMode = false;
     items.animateFlow.stop(); // Stops any previous animations
     items.listModel.clear();
     items.answerZone.currentIndex = 0;

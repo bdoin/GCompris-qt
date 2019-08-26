@@ -57,9 +57,6 @@ ActivityBase {
             property alias answerZone: answerZone
             property alias animateFlow: animateFlow
             property alias introMessage: introMessage
-            property bool memoryMode: false
-            property bool mouseEnabled: true
-            property var currentKeyZone: answerZone
             property bool keyNavigationMode: false
         }
 
@@ -127,68 +124,44 @@ ActivityBase {
                             listModel.move(listModel.count - 1, dropIndex, 1)
                             opacity = 1
                         }
-                        if(globalCoordinates.y > (background.height / 8)) {
-                            // Remove it if dropped in the lower section
-                            activity.audioEffects.play('qrc:/gcompris/src/core/resource/sounds/smudge.wav')
-                            listModel.remove(listModel.count - 1)
-                        }
                     }
 
                     function createNewItem(color) {
-                        console.log("createNewItem");
+                        console.log("createNewItem color=", color);
                         var component = Qt.createComponent("Note.qml");
                         if(component.status === Component.Ready) {
-                            var newItem = component.createObject(parent, {"x": x, "y": y, "z": 10,
-                                                                     "colorNote": color} );
+                            var newItem = component.createObject(parent, {"x": x, "y": y, "z": 10, "noteColor": color} );
                         }
                         return newItem
                     }
 
                     MouseArea {
                         id: displayNoteMouseArea
-                        hoverEnabled: true
-                        enabled: !introMessage.visible && items.mouseEnabled
+                        enabled: !introMessage.visible
                         anchors.fill: parent
 
                         onPressed: {
-                            if(items.memoryMode) {
-                                drag.target = parent.createNewItem(note.noteColor);
-                                parent.opacity = 0
-                                listModel.move(index, listModel.count - 1, 1)
-                            }
+                            console.log("onPressed", index, note.noteValue, note.color)
+                            items.keyNavigationMode = false;
+                            drag.target = parent.createNewItem(note.color);
+                            parent.opacity = 0
+                            listModel.move(index, listModel.count - 1, 1)
                             answerZone.selectedSwapIndex = -1;
                         }
                         onReleased: {
-                            if(items.memoryMode) {
-                                var dragItem = drag.target
-                                parent.checkDrop(dragItem)
-                                dragItem.destroy();
-                                parent.Drag.cancel()
-                            }
+                            console.log("onReleased", index, note.noteValue)
+                            var dragItem = drag.target
+                            parent.checkDrop(dragItem)
+                            dragItem.destroy();
+                            parent.Drag.cancel()
                         }
 
                         onClicked: {
                             console.log("onClicked", index, note.noteValue)
+                            items.keyNavigationMode = false;
                             GSynth.generate(note.noteValue, 400)
-                            // skips memorization time
-                            if(!items.memoryMode) {
-                                bar.hintClicked()
-                            }
-                            else {
-                                items.currentKeyZone = answerZone
-                                if(items.keyNavigationMode) {
-                                    answerZone.currentIndex = index
-                                }
-                            }
+                            answerZone.currentIndex = index
                             answerZone.selectedSwapIndex = -1;
-                        }
-                    }
-                    states: State {
-                        name: "noteHover"
-                        when: displayNoteMouseArea.containsMouse && (items.memoryMode === true)
-                        PropertyChanges {
-                            target: wagon
-                            scale: 1.1
                         }
                     }
                 }
@@ -226,19 +199,11 @@ ActivityBase {
                     if(event.key === Qt.Key_Right) {
                         answerZone.moveCurrentIndexRight()
                     }
-                    // Remove a wagon via Delete/Return key.
-                    if(event.key === Qt.Key_Delete && listModel.count > 0) {
-                        activity.audioEffects.play('qrc:/gcompris/src/core/resource/sounds/smudge.wav')
-                        listModel.remove(answerZone.currentIndex)
-                        if(listModel.count < 2) {
-                            answerZone.selectedSwapIndex = -1;
-                        }
-                    }
                     // Checks answer.
-                    if((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && items.mouseEnabled) {
+                    if((event.key === Qt.Key_Return || event.key === Qt.Key_Enter)) {
                         Activity.checkAnswer();
                     }
-                    // Swaps two wagons with help of Space/Enter keys.
+                    // Swaps two note with help of Space/Enter keys.
                     if(event.key === Qt.Key_Space) {
                         if(selectedSwapIndex === -1 && listModel.count > 1) {
                             answerZone.selectedSwapIndex = answerZone.currentIndex;
@@ -263,12 +228,15 @@ ActivityBase {
                 keyNavigationWraps: true
                 highlightRangeMode: GridView.ApplyRange
                 highlight: Rectangle {
-                    width: answerZone.cellWidth
-                    height: answerZone.cellHeight
-                    color: "blue"
-                    opacity: 0.3
+                    width: answerZone.cellWidth * 0.5
+                    height: answerZone.cellHeight * 0.2
+                    z: 1000
+                    border.width: 2
+                    border.color: "white"
+                    color: '#600'
+                    opacity: 0.9
                     radius: 5
-                    visible: (items.currentKeyZone === answerZone) && (!animateFlow.running) && items.keyNavigationMode
+                    visible: (!animateFlow.running) && items.keyNavigationMode
                     x: (visible && answerZone.currentItem) ? answerZone.currentItem.x : 0
                     y: (visible && answerZone.currentItem) ? answerZone.currentItem.y : 0
                     Behavior on x {
@@ -287,14 +255,18 @@ ActivityBase {
                 highlightFollowsCurrentItem: false
             }
 
-            // Used to highlight a wagon selected for swaping via key navigations
+            // Used to highlight a note selected for swaping via key navigations
             Rectangle {
                 id: swapHighlight
-                width: answerZone.cellWidth
-                height: answerZone.cellHeight
+                width: answerZone.cellWidth * 0.6
+                height: answerZone.cellHeight * 0.3
+                z: 1000
+                anchors.margins: 20
+                border.width: 2
+                border.color: "white"
                 visible: answerZone.selectedSwapIndex != -1 ? true : false
-                color: "#AA41AAC4"
-                opacity: 0.8
+                color: "#00A"
+                opacity: 0.9
                 radius: 5
             }
 
@@ -324,7 +296,7 @@ ActivityBase {
             MouseArea {
                 id: okButtonMouseArea
                 anchors.fill: parent
-                enabled: !animateFlow.running && listModel.count > 0 && items.mouseEnabled
+                enabled: !animateFlow.running && listModel.count > 0
                 onClicked: Activity.checkAnswer()
             }
         }

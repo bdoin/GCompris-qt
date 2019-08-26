@@ -24,13 +24,13 @@ import "inter-note.js" as Activity
 
 Item {
     id: draggedItem
-    property string colorNote
-    Component.onCompleted: console.log("Note created=", note, colorNote)
+    property string noteColor
+    Component.onCompleted: console.log("Note created=", noteColor)
     Rectangle {
         id: img
-        color: colorNote
-        height: background.height / 8.0
-        width: ((background.width >= background.height) ? background.width : background.height) / 5.66
+        color: parent.noteColor
+        height: note.height
+        width: note.width
         Drag.hotSpot.x: width / 2
         Drag.hotSpot.y: height / 2
     }
