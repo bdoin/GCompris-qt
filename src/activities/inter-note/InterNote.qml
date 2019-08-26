@@ -139,6 +139,7 @@ ActivityBase {
                         id: displayNoteMouseArea
                         enabled: !introMessage.visible
                         anchors.fill: parent
+                        drag.axis: Drag.XAxis
 
                         onPressed: {
                             console.log("onPressed", index, note.noteValue, note.color)
