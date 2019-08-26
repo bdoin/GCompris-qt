@@ -227,15 +227,14 @@ ActivityBase {
                 focus: true
                 keyNavigationWraps: true
                 highlightRangeMode: GridView.ApplyRange
-                highlight: Rectangle {
-                    width: answerZone.cellWidth * 0.5
-                    height: answerZone.cellHeight * 0.2
+                highlight: Image {
+                    source: "qrc:/gcompris/src/core/resource/apply.svg"
+                    width: answerZone.cellWidth * 0.7
+                    sourceSize.width: width
+                    fillMode: Image.PreserveAspectFit
+                    anchors.top: parent.top
+                    anchors.topMargin: 100
                     z: 1000
-                    border.width: 2
-                    border.color: "white"
-                    color: '#600'
-                    opacity: 0.9
-                    radius: 5
                     visible: (!animateFlow.running) && items.keyNavigationMode
                     x: (visible && answerZone.currentItem) ? answerZone.currentItem.x : 0
                     y: (visible && answerZone.currentItem) ? answerZone.currentItem.y : 0
@@ -256,18 +255,16 @@ ActivityBase {
             }
 
             // Used to highlight a note selected for swaping via key navigations
-            Rectangle {
+            Image {
                 id: swapHighlight
-                width: answerZone.cellWidth * 0.6
-                height: answerZone.cellHeight * 0.3
+                source: "qrc:/gcompris/src/core/resource/bar_up.svg"
+                width: answerZone.cellWidth * 0.7
+                sourceSize.width: width
+                fillMode: Image.PreserveAspectFit
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 100
                 z: 1000
-                anchors.margins: 20
-                border.width: 2
-                border.color: "white"
                 visible: answerZone.selectedSwapIndex != -1 ? true : false
-                color: "#00A"
-                opacity: 0.9
-                radius: 5
             }
 
             ListModel {
