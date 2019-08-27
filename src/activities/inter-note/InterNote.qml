@@ -105,6 +105,10 @@ ActivityBase {
                 interactive: false
                 model: listModel
 
+                // variable for storing the index of notes to be swapped via key navigations.
+                property int selectedSwapIndex: -1
+                property int currentX: -1
+
                 delegate: Rectangle {
                     id: note
                     height: answerZone.cellHeight * 0.9
@@ -124,8 +128,13 @@ ActivityBase {
                         var min = Math.min(selectedSwapIndex, answerZone.currentIndex);
                         var max = Math.max(selectedSwapIndex, answerZone.currentIndex);
                         console.log("min max=", min, max);
-                        items.listModel.move(min, max, 1);
-                        items.listModel.move(max-1, min, 1);
+                        if(min !== max) {
+                            items.listModel.move(min, max, 1);
+                            items.listModel.move(max-1, min, 1);
+                        } else {
+                            dragItem.x = answerZone.currentX;
+                        }
+
                     }
 
                     MouseArea {
@@ -135,7 +144,7 @@ ActivityBase {
                         drag.axis: Drag.XAxis
 
                         onPressed: {
-                            console.log("onPressed", index, note.noteValue, note.color)
+                            console.log("onPressed", index, note.noteValue, note.color, parent.z)
                             items.keyNavigationMode = false;
                             GSynth.generate(note.noteValue, 400)
                             answerZone.currentIndex = index
@@ -146,16 +155,16 @@ ActivityBase {
                             if(mouse.wasHeld) {
                                 items.keyNavigationMode = false;
                                 drag.target = parent
-                                parent.z = 100
+                                drag.target.z = 100;
+                                console.log("  z=", drag.target.z)
                                 answerZone.selectedSwapIndex = -1;
-
+                                answerZone.currentX = parent.x
                             }
                         }
                         onReleased: {
                             console.log("onReleased", index, note.noteValue)
                             console.log("drag.target=", drag.target, drag.active)
                             if(drag.active) {
-                                parent.z = 1
                                 parent.checkDrop(drag.target)
                                 parent.Drag.cancel()
                             }
@@ -217,8 +226,6 @@ ActivityBase {
                         }
                     }
                 }
-                // variable for storing the index of notes to be swapped via key navigations.
-                property int selectedSwapIndex: -1
 
                 Keys.enabled: true
                 focus: true
