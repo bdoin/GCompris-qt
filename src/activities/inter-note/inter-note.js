@@ -136,30 +136,9 @@ function checkAnswer() {
         note = items.listModel.get(index).note;
     }
     if(isSolution === true) {
-        items.mouseEnabled = false; // Disables the touch
         items.bonus.good("flower");
     }
     else {
-        items.mouseEnabled = false; // Disables the touch
         items.bonus.bad("flower");
     }
 }
-
-function getDropIndex(x) {
-    var count = items.listModel.count;
-    for (var index = 0; index < count; index++) {
-        var xVal = items.answerZone.cellWidth * index
-        var itemWidth = items.answerZone.cellWidth
-        if(x < xVal && index == 0) {
-            return 0;
-        }
-        else if((xVal + itemWidth + items.background.width * 0.0025) <= x && index == (count - 1)) {
-            return count;
-        }
-        else if(xVal <= x && x < (xVal + itemWidth + items.background.width * 0.0025)) {
-            return index + 1;
-        }
-    }
-    return 0;
-}
-

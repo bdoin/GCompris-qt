@@ -110,29 +110,22 @@ ActivityBase {
                     height: answerZone.cellHeight * 0.9
                     width: answerZone.cellWidth * 0.9
                     color: noteColor
-                    property int noteValue: noteVal
+                    property real noteValue: noteVal
                     function checkDrop(dragItem) {
                         // Checks the drop location of this note
                         var globalCoordinates = dragItem.mapToItem(answerZone, 0, 0)
-                        if(globalCoordinates.y <= ((background.height / 12.5) + (background.height / 8))) {
-                            var dropIndex = Activity.getDropIndex(globalCoordinates.x)
-
-                            if(dropIndex > (listModel.count - 1)) {
-                                // Handles index overflow
-                                dropIndex = listModel.count - 1
-                            }
-                            listModel.move(listModel.count - 1, dropIndex, 1)
-                            opacity = 1
+                        var selectedSwapIndex = Math.round((globalCoordinates.x / answerZone.width) * listModel.count)
+                        if(selectedSwapIndex > (listModel.count - 1)) {
+                            // Handles index overflow
+                            selectedSwapIndex = listModel.count - 1
+                        } else if(selectedSwapIndex < 0) {
+                            selectedSwapIndex = 0;
                         }
-                    }
-
-                    function createNewItem(color) {
-                        console.log("createNewItem color=", color);
-                        var component = Qt.createComponent("Note.qml");
-                        if(component.status === Component.Ready) {
-                            var newItem = component.createObject(parent, {"x": x, "y": y, "z": 10, "noteColor": color} );
-                        }
-                        return newItem
+                        var min = Math.min(selectedSwapIndex, answerZone.currentIndex);
+                        var max = Math.max(selectedSwapIndex, answerZone.currentIndex);
+                        console.log("min max=", min, max);
+                        items.listModel.move(min, max, 1);
+                        items.listModel.move(max-1, min, 1);
                     }
 
                     MouseArea {
@@ -144,25 +137,28 @@ ActivityBase {
                         onPressed: {
                             console.log("onPressed", index, note.noteValue, note.color)
                             items.keyNavigationMode = false;
-                            drag.target = parent.createNewItem(note.color);
-                            parent.opacity = 0
-                            listModel.move(index, listModel.count - 1, 1)
-                            answerZone.selectedSwapIndex = -1;
-                        }
-                        onReleased: {
-                            console.log("onReleased", index, note.noteValue)
-                            var dragItem = drag.target
-                            parent.checkDrop(dragItem)
-                            dragItem.destroy();
-                            parent.Drag.cancel()
-                        }
-
-                        onClicked: {
-                            console.log("onClicked", index, note.noteValue)
-                            items.keyNavigationMode = false;
                             GSynth.generate(note.noteValue, 400)
                             answerZone.currentIndex = index
                             answerZone.selectedSwapIndex = -1;
+                        }
+                        onPressAndHold: {
+                            console.log("onPressedAndHold", index, note.noteValue, note.color, mouse.wasHeld)
+                            if(mouse.wasHeld) {
+                                items.keyNavigationMode = false;
+                                drag.target = parent
+                                parent.z = 100
+                                answerZone.selectedSwapIndex = -1;
+
+                            }
+                        }
+                        onReleased: {
+                            console.log("onReleased", index, note.noteValue)
+                            console.log("drag.target=", drag.target, drag.active)
+                            if(drag.active) {
+                                parent.z = 1
+                                parent.checkDrop(drag.target)
+                                parent.Drag.cancel()
+                            }
                         }
                     }
                 }
