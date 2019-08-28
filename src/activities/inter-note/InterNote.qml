@@ -113,6 +113,7 @@ ActivityBase {
                     id: note
                     height: answerZone.cellHeight * 0.9
                     width: answerZone.cellWidth * 0.9
+                    z: displayNoteMouseArea.drag.active ? 100 : 1
                     color: noteColor
                     property real noteValue: noteVal
                     function checkDrop(dragItem) {
@@ -125,13 +126,11 @@ ActivityBase {
                         } else if(selectedSwapIndex < 0) {
                             selectedSwapIndex = 0;
                         }
-                        var min = Math.min(selectedSwapIndex, answerZone.currentIndex);
-                        var max = Math.max(selectedSwapIndex, answerZone.currentIndex);
-                        console.log("min max=", min, max);
-                        if(min !== max) {
-                            items.listModel.move(min, max, 1);
-                            items.listModel.move(max-1, min, 1);
+                        if(selectedSwapIndex !== answerZone.currentIndex) {
+                            items.listModel.move(answerZone.currentIndex, selectedSwapIndex, 1);
                         } else {
+                            // In case of a drop on the same item, reset the x coord
+                            // of the dragged item to its old position.
                             dragItem.x = answerZone.currentX;
                         }
 
@@ -144,26 +143,20 @@ ActivityBase {
                         drag.axis: Drag.XAxis
 
                         onPressed: {
-                            console.log("onPressed", index, note.noteValue, note.color, parent.z)
                             items.keyNavigationMode = false;
                             GSynth.generate(note.noteValue, 400)
                             answerZone.currentIndex = index
                             answerZone.selectedSwapIndex = -1;
                         }
                         onPressAndHold: {
-                            console.log("onPressedAndHold", index, note.noteValue, note.color, mouse.wasHeld)
                             if(mouse.wasHeld) {
                                 items.keyNavigationMode = false;
                                 drag.target = parent
-                                drag.target.z = 100;
-                                console.log("  z=", drag.target.z)
                                 answerZone.selectedSwapIndex = -1;
                                 answerZone.currentX = parent.x
                             }
                         }
                         onReleased: {
-                            console.log("onReleased", index, note.noteValue)
-                            console.log("drag.target=", drag.target, drag.active)
                             if(drag.active) {
                                 parent.checkDrop(drag.target)
                                 parent.Drag.cancel()
@@ -214,14 +207,9 @@ ActivityBase {
                         if(selectedSwapIndex === -1 && listModel.count > 1) {
                             answerZone.selectedSwapIndex = answerZone.currentIndex;
                             swapHighlight.x = answerZone.currentItem.x;
-                            swapHighlight.anchors.top = answerZone.top;
-                            console.log("selection done", answerZone.selectedSwapIndex);
                         }
                         else if(answerZone.currentIndex != selectedSwapIndex && listModel.count > 1) {
-                            var min = Math.min(selectedSwapIndex, answerZone.currentIndex);
-                            var max = Math.max(selectedSwapIndex, answerZone.currentIndex);
-                            items.listModel.move(min, max, 1);
-                            items.listModel.move(max-1, min, 1);
+                            items.listModel.move(selectedSwapIndex, answerZone.currentIndex, 1);
                             answerZone.selectedSwapIndex = -1;
                         }
                     }
@@ -236,7 +224,6 @@ ActivityBase {
                     width: answerZone.cellWidth * 0.7
                     sourceSize.width: width
                     fillMode: Image.PreserveAspectFit
-                    anchors.top: parent.top
                     anchors.topMargin: 100
                     z: 1000
                     visible: (!animateFlow.running) && items.keyNavigationMode

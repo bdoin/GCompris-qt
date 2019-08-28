@@ -48,10 +48,9 @@ var dataset = {
 
 // Color have not particular meaning, just to ease the user to remember tested notes
 var colorset = [
-            "#ffdda1", "#ffd151", "#f8c537", "#edb230", "#e77728", "#f55536",
-            "#d5a021", "#a4243b", "#d8c99b", "#d8973c", "#51a3a3", "#2f6690",
-            "#d5a021", "#d9dcd6", "#16425b", "#2f6690", "#88a09e", "#d5a021",
-            "#704c5e", "#b88c9e",
+            "#ffdda1", "#ffc151", "#f8c537", "#edb230", "#e77728", "#f55536",
+            "#c5a021", "#a4243b", "#d8c99b", "#d8973c", "#51a3a3", "#2f6690",
+            "#d9dcd6", "#16425b", "#88a09e", "#d5a021", "#704c5e", "#b88c9e",
         ]
 
 function start(items_) {
@@ -73,6 +72,10 @@ function initLevel() {
 
     // Shuffle the colorset to make the game really random
     Core.shuffle(colorset);
+    if(colorset.length < dataset["NotesToFind"][currentLevel]) {
+        console.log("ERROR: INTER-NOTE: colorset is too small")
+        return;
+    }
 
     // Create the note lists and shuffle it
     var notes = [];
@@ -82,7 +85,6 @@ function initLevel() {
     Core.shuffle(notes);
 
     for(var i=0; i<dataset["NotesToFind"][currentLevel]; i++) {
-        console.log("addNote=", i, notes[i])
         items.listModel.insert(i,
                                {
                                    "noteColor": colorset[i],
